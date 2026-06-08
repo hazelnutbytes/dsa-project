@@ -40,5 +40,13 @@ int main() {
     indexDocument(d2);
     indexDocument(d3);
 
+    for (auto &pair : indexMap) {
+    cout << pair.first << ":";
+    for (int id : pair.second) {
+        cout << id << " ";
+    }
+    cout << endl;
+}
+
     return 0;
 }
