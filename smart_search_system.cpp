@@ -1,6 +1,8 @@
 #include <iostream>
 #include <string>
 #include <unordered_map>
+#include <map>
+#include <sstream>
 using namespace std;
 
 struct Document {
@@ -9,6 +11,17 @@ struct Document {
 };
 
 unordered_map<int, Document> docs;
+
+map<string, vector<int>> indexMap;
+
+void indexDocument(Document &doc) {
+    stringstream ss(doc.content);
+    string word;
+    
+    while (ss >> word) {
+        indexMap[word].push_back(doc.id);
+    }
+}
 
 int main() {
     Document d1 = {1, "hello world"};
@@ -22,6 +35,10 @@ int main() {
     for (auto &pair : docs) {
         cout << pair.first << " -> " << pair.second.content << endl;
     }
-    
+
+    indexDocument(d1);
+    indexDocument(d2);
+    indexDocument(d3);
+
     return 0;
 }
