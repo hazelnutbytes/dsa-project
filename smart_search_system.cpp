@@ -18,5 +18,10 @@ int main() {
     docs[d1.id] = d1;
     docs[d2.id] = d2;
     docs[d3.id] = d3;
+
+    for (auto &pair : docs) {
+        cout << pair.first << " -> " << pair.second.content << endl;
+    }
+    
     return 0;
 }
