@@ -10,6 +10,7 @@ struct Document
     int id;
     string content;
     int clicks = 0;
+    vector<int> citations;
 };
 
 unordered_map<int, Document> docs;
@@ -62,6 +63,9 @@ int main()
     docs[d1.id] = d1;
     docs[d2.id] = d2;
     docs[d3.id] = d3;
+
+    docs[1].citations.push_back(2);
+    docs[2].citations.push_back(3);
 
     for (auto &pair : docs)
     {
