@@ -34,6 +34,12 @@ stack<Action> rollbacklog;
 unordered_map<int, Document> docs;
 map<string, vector<int>> indexMap;
 
+queue<string> computeQueue;
+
+void addToQueue(string filename) {
+    computeQueue.push(filename);
+}
+
 unordered_map<string, vector<string>> keywordMap;
 
 string readFileContent(const string &fileName)
