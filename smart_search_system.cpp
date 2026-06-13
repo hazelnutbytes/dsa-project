@@ -20,8 +20,8 @@ struct Document
 
 struct Action
 {
-    string type;  
-    int docId;    
+    string type;
+    int docId;
 };
 
 stack<Action> rollbacklog;
@@ -113,7 +113,7 @@ void search(string keyword)
 
     sort(results.begin(), results.end(), [&](int a, int b)
          {
-        // 🔥 combine score + clicks
+        //combine score + clicks
         if (score[a] == score[b])
             return docs[a].clicks > docs[b].clicks;
         return score[a] > score[b]; });
@@ -129,8 +129,12 @@ void search(string keyword)
 
 void openDocument(int id)
 {
-    docs[id].clicks++;
-    cout << "Opened: " << docs[id].content << endl;
+    if (docs.find(id) != docs.end())
+    {
+        docs[id].clicks++;
+        rollbacklog.push({"OPEN", id});
+        cout << "Opened: " << docs[id].content << endl;
+    }
 }
 
 void findPath(int start, int target)
@@ -189,9 +193,10 @@ int main()
     d3.id = 3;
     d3.content = "search engine project";
 
-    docs[d1.id] = d1;
-    docs[d2.id] = d2;
-    docs[d3.id] = d3;
+    for (auto &pair : docs)
+    {
+        indexDocument(pair.second);
+    }
 
     docs[1].citations.push_back(2);
     docs[2].citations.push_back(3);
