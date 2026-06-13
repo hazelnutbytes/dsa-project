@@ -8,11 +8,13 @@
 #include <algorithm>
 #include <set>
 #include <stack>
+#include <fstream>
 using namespace std;
 
 struct Document
 {
     int id;
+    string fileName;
     string content;
     int clicks = 0;
     vector<int> citations;
@@ -33,6 +35,21 @@ unordered_map<int, Document> docs;
 map<string, vector<int>> indexMap;
 
 unordered_map<string, vector<string>> keywordMap;
+
+string readFileContent(const string &fileName)
+{
+    ifstream file(fileName);
+    stringstream buffer;
+    buffer << file.rdbuf();
+    return buffer.str();
+}
+
+void createFile(const string &fileName, const string &content)
+{
+    ofstream file(fileName);
+    file << content;
+    file.close();
+}
 
 unordered_map<string, int> getKeywordDepth(string start)
 {
@@ -83,11 +100,22 @@ void removeFromIndex(int docId)
     }
 }
 
-void addDocument(Document doc)
+void addDocument(int id, string fileName, string content)
 {
-    docs[doc.id] = doc;
-    rollbacklog.push({"ADD_DOC", doc.id, doc, "", ""});
-    indexDocument(docs[doc.id]);
+    string fullName = to_string(id) + "_" + fileName + ".txt";
+
+    createFile(fullName, content);
+
+    Document doc;
+    doc.id = id;
+    doc.fileName = fullName;
+    doc.content = content;
+
+    docs[id] = doc;
+
+    rollbacklog.push({"ADD_DOC", id, doc, "", ""});
+
+    indexDocument(docs[id]);
 }
 
 void addKeywordRelation(string a, string b)
@@ -147,9 +175,7 @@ void search(string keyword)
 
     vector<int> results;
     for (auto &p : score)
-    {
         results.push_back(p.first);
-    }
 
     sort(results.begin(), results.end(), [&](int a, int b)
          {
@@ -161,7 +187,8 @@ void search(string keyword)
     {
         cout << "Doc " << id
              << " (Score: " << score[id]
-             << ", Clicks: " << docs[id].clicks << "): "
+             << ", Clicks: " << docs[id].clicks
+             << ", File: " << docs[id].fileName << "): "
              << docs[id].content << endl;
     }
 }
@@ -171,7 +198,7 @@ void openDocument(int id)
     if (docs.find(id) != docs.end())
     {
         docs[id].clicks++;
-        cout << "Opened: " << docs[id].content << endl;
+        cout << "Opened: " << docs[id].fileName << endl;
     }
 }
 
@@ -261,13 +288,20 @@ void adminMenu()
 
         if (choice == 1)
         {
-            Document d;
+            int id;
+            string name, content;
+
             cout << "ID: ";
-            cin >> d.id;
+            cin >> id;
+
+            cout << "File Name: ";
+            cin >> name;
+
             cin.ignore();
             cout << "Content: ";
-            getline(cin, d.content);
-            addDocument(d);
+            getline(cin, content);
+
+            addDocument(id, name, content);
         }
         else if (choice == 2)
         {
