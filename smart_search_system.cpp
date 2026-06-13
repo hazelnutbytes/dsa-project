@@ -74,6 +74,15 @@ void indexDocument(Document &doc)
     }
 }
 
+void removeFromIndex(int docId)
+{
+    for (auto &pair : indexMap)
+    {
+        auto &vec = pair.second;
+        vec.erase(remove(vec.begin(), vec.end(), docId), vec.end());
+    }
+}
+
 void addDocument(Document doc)
 {
     docs[doc.id] = doc;
@@ -97,6 +106,7 @@ void undo()
 
     if (last.type == "ADD_DOC")
     {
+        removeFromIndex(last.docId);
         docs.erase(last.docId);
     }
     else if (last.type == "ADD_KEYWORD")
@@ -123,7 +133,8 @@ void search(string keyword)
         {
             for (int id : indexMap[k])
             {
-                score[id] += weight;
+                if (docs.find(id) != docs.end())
+                    score[id] += weight;
             }
         }
     }
@@ -206,59 +217,88 @@ void findPath(int start, int target)
     cout << endl;
 }
 
+void userMenu()
+{
+    int choice;
+    while (true)
+    {
+        cout << "\n1.Search\n2.Open Document\n3.Find Path\n4.Exit\nChoice: ";
+        cin >> choice;
+
+        if (choice == 1)
+        {
+            string key;
+            cout << "Keyword: ";
+            cin >> key;
+            search(key);
+        }
+        else if (choice == 2)
+        {
+            int id;
+            cout << "Doc ID: ";
+            cin >> id;
+            openDocument(id);
+        }
+        else if (choice == 3)
+        {
+            int a, b;
+            cout << "Start and Target: ";
+            cin >> a >> b;
+            findPath(a, b);
+        }
+        else
+            break;
+    }
+}
+
+void adminMenu()
+{
+    int choice;
+    while (true)
+    {
+        cout << "\n1.Add Document\n2.Add Keyword Relation\n3.Undo\n4.Exit\nChoice: ";
+        cin >> choice;
+
+        if (choice == 1)
+        {
+            Document d;
+            cout << "ID: ";
+            cin >> d.id;
+            cin.ignore();
+            cout << "Content: ";
+            getline(cin, d.content);
+            addDocument(d);
+        }
+        else if (choice == 2)
+        {
+            string a, b;
+            cout << "Parent Child: ";
+            cin >> a >> b;
+            addKeywordRelation(a, b);
+        }
+        else if (choice == 3)
+        {
+            undo();
+        }
+        else
+            break;
+    }
+}
+
 int main()
 {
-    Document d1;
-    d1.id = 1;
-    d1.content = "hello world";
-
-    Document d2;
-    d2.id = 2;
-    d2.content = "c++ is fun";
-
-    Document d3;
-    d3.id = 3;
-    d3.content = "search engine project";
-
-    addDocument(d1);
-    addDocument(d2);
-    addDocument(d3);
-
-    docs[1].citations.push_back(2);
-    docs[2].citations.push_back(3);
-
-    addKeywordRelation("AI", "ML");
-    addKeywordRelation("ML", "DeepLearning");
-    addKeywordRelation("DeepLearning", "NeuralNetworks");
-
-    addKeywordRelation("car", "vehicle");
-    addKeywordRelation("vehicle", "automobile");
-
-    addKeywordRelation("phone", "mobile");
-    addKeywordRelation("mobile", "smartphone");
-
-    for (auto &pair : docs)
+    int role;
+    while (true)
     {
-        cout << pair.first << " -> " << pair.second.content << endl;
+        cout << "\n1.User\n2.Admin\n3.Exit\nChoice: ";
+        cin >> role;
+
+        if (role == 1)
+            userMenu();
+        else if (role == 2)
+            adminMenu();
+        else
+            break;
     }
-
-    for (auto &pair : indexMap)
-    {
-        cout << pair.first << ":";
-        for (int id : pair.second)
-        {
-            cout << id << " ";
-        }
-        cout << endl;
-    }
-
-    openDocument(1);
-    search("hello");
-    search("AI");
-
-    findPath(1, 3);
-
-    undo();
-
     return 0;
 }
