@@ -36,9 +36,15 @@ void search(string keyword)
         return;
     }
 
-    for (int id : indexMap[keyword])
+    vector<int> results = indexMap[keyword];
+
+    sort(results.begin(), results.end(), [](int a, int b) {
+        return docs[a].clicks > docs[b].clicks;
+    });
+
+    for (int id : results)
     {
-        cout << "Doc" << id << ":" << docs[id].content << endl;
+        cout << "Doc" << id << " (Clicks: " << docs[id].clicks << ":" << docs[id].content << endl;
     }
 }
 
@@ -75,7 +81,7 @@ int main()
         }
         cout << endl;
     }
-
+    openDocument(1);
     search("hello");
     openDocument(1);
 
