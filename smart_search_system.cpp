@@ -5,7 +5,8 @@
 #include <sstream>
 using namespace std;
 
-struct Document {
+struct Document
+{
     int id;
     string content;
 };
@@ -14,16 +15,34 @@ unordered_map<int, Document> docs;
 
 map<string, vector<int>> indexMap;
 
-void indexDocument(Document &doc) {
+// indexing logic
+void indexDocument(Document &doc)
+{
     stringstream ss(doc.content);
     string word;
-    
-    while (ss >> word) {
+
+    while (ss >> word)
+    {
         indexMap[word].push_back(doc.id);
     }
 }
 
-int main() {
+void search(string keyword)
+{
+    if (indexMap.find(keyword) == indexMap.end())
+    {
+        cout << "No results\n";
+        return;
+    }
+
+    for (int id : indexMap[keyword])
+    {
+        cout << "Doc" << id << ":" << docs[id].content << endl;
+    }
+}
+
+int main()
+{
     Document d1 = {1, "hello world"};
     Document d2 = {2, "c++ is fun"};
     Document d3 = {3, "search engine project"};
@@ -32,7 +51,8 @@ int main() {
     docs[d2.id] = d2;
     docs[d3.id] = d3;
 
-    for (auto &pair : docs) {
+    for (auto &pair : docs)
+    {
         cout << pair.first << " -> " << pair.second.content << endl;
     }
 
@@ -40,13 +60,17 @@ int main() {
     indexDocument(d2);
     indexDocument(d3);
 
-    for (auto &pair : indexMap) {
-    cout << pair.first << ":";
-    for (int id : pair.second) {
-        cout << id << " ";
+    for (auto &pair : indexMap)
+    {
+        cout << pair.first << ":";
+        for (int id : pair.second)
+        {
+            cout << id << " ";
+        }
+        cout << endl;
     }
-    cout << endl;
-}
+
+    search("hello");
 
     return 0;
 }
