@@ -5,8 +5,9 @@
 #include <sstream>
 #include <queue>
 #include <vector>
-#include <algorithm> 
-#include <set>       
+#include <algorithm>
+#include <set>
+#include <stack>
 using namespace std;
 
 struct Document
@@ -16,6 +17,14 @@ struct Document
     int clicks = 0;
     vector<int> citations;
 };
+
+struct Action
+{
+    string type;  
+    int docId;    
+};
+
+stack<Action> rollbacklog;
 
 unordered_map<int, Document> docs;
 map<string, vector<int>> indexMap;
@@ -32,11 +41,11 @@ unordered_map<string, int> getKeywordDepth(string start)
 
     while (!q.empty())
     {
-        pair<string, int> p = q.front(); 
+        pair<string, int> p = q.front();
         q.pop();
 
-        string current = p.first;        
-        int d = p.second;              
+        string current = p.first;
+        int d = p.second;
 
         for (string next : keywordMap[current])
         {
@@ -67,7 +76,7 @@ void search(string keyword)
 {
     unordered_map<int, int> score;
 
-    //get all hierarchy levels
+    // get all hierarchy levels
     auto keywordDepth = getKeywordDepth(keyword);
 
     for (auto &pair : keywordDepth)
@@ -75,8 +84,8 @@ void search(string keyword)
         string k = pair.first;
         int depth = pair.second;
 
-        //weight decreases as depth increases
-        int weight = max(1, 3 - depth); 
+        // weight decreases as depth increases
+        int weight = max(1, 3 - depth);
         // depth 0 → 3 points
         // depth 1 → 2 points
         // depth 2+ → 1 point
@@ -103,12 +112,11 @@ void search(string keyword)
     }
 
     sort(results.begin(), results.end(), [&](int a, int b)
-    {
+         {
         // 🔥 combine score + clicks
         if (score[a] == score[b])
             return docs[a].clicks > docs[b].clicks;
-        return score[a] > score[b];
-    });
+        return score[a] > score[b]; });
 
     for (int id : results)
     {
@@ -169,9 +177,17 @@ void findPath(int start, int target)
 
 int main()
 {
-    Document d1 = {1, "hello world"};
-    Document d2 = {2, "c++ is fun"};
-    Document d3 = {3, "search engine project"};
+    Document d1;
+    d1.id = 1;
+    d1.content = "hello world";
+
+    Document d2;
+    d2.id = 2;
+    d2.content = "c++ is fun";
+
+    Document d3;
+    d3.id = 3;
+    d3.content = "search engine project";
 
     docs[d1.id] = d1;
     docs[d2.id] = d2;
@@ -180,7 +196,7 @@ int main()
     docs[1].citations.push_back(2);
     docs[2].citations.push_back(3);
 
-    //multi-level hierarchy
+    // multi-level hierarchy
     keywordMap["AI"] = {"ML"};
     keywordMap["ML"] = {"DeepLearning"};
     keywordMap["DeepLearning"] = {"NeuralNetworks"};
@@ -211,8 +227,8 @@ int main()
     }
 
     openDocument(1);
-    search("hello");   //normal keyword
-    search("AI");      //hierarchy keyword test
+    search("hello"); // normal keyword
+    search("AI");    // hierarchy keyword test
     openDocument(1);
 
     findPath(1, 3);
