@@ -18,6 +18,8 @@ unordered_map<int, Document> docs;
 
 map<string, vector<int>> indexMap;
 
+unordered_map<string, vector<string>> keywordMap;
+
 // indexing logic
 void indexDocument(Document &doc)
 {
@@ -102,6 +104,9 @@ int main()
 
     docs[1].citations.push_back(2);
     docs[2].citations.push_back(3);
+
+    keywordMap["car"] = {"vehicle", "automobile"};
+    keywordMap["phone"] = {"mobile", "smartphone"};
 
     for (auto &pair : docs)
     {
