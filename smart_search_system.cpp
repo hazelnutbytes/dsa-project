@@ -40,6 +40,22 @@ void addToQueue(string filename) {
     computeQueue.push(filename);
 }
 
+void processQueue() {
+    while (!computeQueue.empty()) {
+        string filename = computeQueue.front();
+        computeQueue.pop();
+
+        ifstream file(filename);
+        string line;
+
+        while (getline(file, line)) {
+            cout << line << endl;
+        }
+
+        file.close();
+    }
+}
+
 unordered_map<string, vector<string>> keywordMap;
 
 string readFileContent(const string &fileName)
