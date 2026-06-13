@@ -60,7 +60,6 @@ unordered_map<string, int> getKeywordDepth(string start)
     return depth;
 }
 
-// indexing logic
 void indexDocument(Document &doc)
 {
     stringstream ss(doc.content);
@@ -76,7 +75,6 @@ void search(string keyword)
 {
     unordered_map<int, int> score;
 
-    // get all hierarchy levels
     auto keywordDepth = getKeywordDepth(keyword);
 
     for (auto &pair : keywordDepth)
@@ -84,11 +82,7 @@ void search(string keyword)
         string k = pair.first;
         int depth = pair.second;
 
-        // weight decreases as depth increases
         int weight = max(1, 3 - depth);
-        // depth 0 → 3 points
-        // depth 1 → 2 points
-        // depth 2+ → 1 point
 
         if (indexMap.find(k) != indexMap.end())
         {
@@ -113,7 +107,6 @@ void search(string keyword)
 
     sort(results.begin(), results.end(), [&](int a, int b)
          {
-        //combine score + clicks
         if (score[a] == score[b])
             return docs[a].clicks > docs[b].clicks;
         return score[a] > score[b]; });
@@ -193,15 +186,13 @@ int main()
     d3.id = 3;
     d3.content = "search engine project";
 
-    for (auto &pair : docs)
-    {
-        indexDocument(pair.second);
-    }
+    docs[d1.id] = d1;
+    docs[d2.id] = d2;
+    docs[d3.id] = d3;
 
     docs[1].citations.push_back(2);
     docs[2].citations.push_back(3);
 
-    // multi-level hierarchy
     keywordMap["AI"] = {"ML"};
     keywordMap["ML"] = {"DeepLearning"};
     keywordMap["DeepLearning"] = {"NeuralNetworks"};
@@ -214,12 +205,13 @@ int main()
 
     for (auto &pair : docs)
     {
-        cout << pair.first << " -> " << pair.second.content << endl;
+        indexDocument(pair.second);
     }
 
-    indexDocument(d1);
-    indexDocument(d2);
-    indexDocument(d3);
+    for (auto &pair : docs)
+    {
+        cout << pair.first << " -> " << pair.second.content << endl;
+    }
 
     for (auto &pair : indexMap)
     {
@@ -232,8 +224,8 @@ int main()
     }
 
     openDocument(1);
-    search("hello"); // normal keyword
-    search("AI");    // hierarchy keyword test
+    search("hello");
+    search("AI");
     openDocument(1);
 
     findPath(1, 3);
