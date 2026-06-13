@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <map>
 #include <sstream>
+#include <queue>
 using namespace std;
 
 struct Document
@@ -54,6 +55,41 @@ void openDocument(int id) {
     cout << "Opened: " << docs[id].content << endl;
 }
 
+void findPath(int start, int target) {
+    queue<int> q;
+    unordered_map<int, int> parent;
+    
+    q.push(start);
+    parent[start] = -1;
+
+    while(!q.empty()) {
+        int curr = q.front();
+        q.pop();
+
+        if(curr == target) break;
+
+        for (int next : docs[curr].citations) {
+            if (parent.find(next) == parent.end()) {
+                parent[next] = curr;
+                q.push(next);
+            }
+        }
+    } 
+
+    if(parent.find(target) == parent.end()) {
+        cout << "No path found\n";
+        return;
+    }
+
+    cout << "Path: ";
+    int curr = target;
+    while (curr != -1) {
+        cout << curr << " ";
+        curr = parent[curr];
+    }
+    cout << endl;
+}
+
 int main()
 {
     Document d1 = {1, "hello world"};
@@ -89,5 +125,6 @@ int main()
     search("hello");
     openDocument(1);
 
+    findPath(1, 3);
     return 0;
 }
