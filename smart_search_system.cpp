@@ -22,6 +22,9 @@ struct Action
 {
     string type;
     int docId;
+    Document backup;
+    string key;
+    string related;
 };
 
 stack<Action> rollbacklog;
@@ -68,6 +71,38 @@ void indexDocument(Document &doc)
     while (ss >> word)
     {
         indexMap[word].push_back(doc.id);
+    }
+}
+
+void addDocument(Document doc)
+{
+    docs[doc.id] = doc;
+    rollbacklog.push({"ADD_DOC", doc.id, doc, "", ""});
+    indexDocument(docs[doc.id]);
+}
+
+void addKeywordRelation(string a, string b)
+{
+    keywordMap[a].push_back(b);
+    rollbacklog.push({"ADD_KEYWORD", -1, {}, a, b});
+}
+
+void undo()
+{
+    if (rollbacklog.empty())
+        return;
+
+    Action last = rollbacklog.top();
+    rollbacklog.pop();
+
+    if (last.type == "ADD_DOC")
+    {
+        docs.erase(last.docId);
+    }
+    else if (last.type == "ADD_KEYWORD")
+    {
+        auto &vec = keywordMap[last.key];
+        vec.erase(remove(vec.begin(), vec.end(), last.related), vec.end());
     }
 }
 
@@ -125,7 +160,6 @@ void openDocument(int id)
     if (docs.find(id) != docs.end())
     {
         docs[id].clicks++;
-        rollbacklog.push({"OPEN", id});
         cout << "Opened: " << docs[id].content << endl;
     }
 }
@@ -186,27 +220,22 @@ int main()
     d3.id = 3;
     d3.content = "search engine project";
 
-    docs[d1.id] = d1;
-    docs[d2.id] = d2;
-    docs[d3.id] = d3;
+    addDocument(d1);
+    addDocument(d2);
+    addDocument(d3);
 
     docs[1].citations.push_back(2);
     docs[2].citations.push_back(3);
 
-    keywordMap["AI"] = {"ML"};
-    keywordMap["ML"] = {"DeepLearning"};
-    keywordMap["DeepLearning"] = {"NeuralNetworks"};
+    addKeywordRelation("AI", "ML");
+    addKeywordRelation("ML", "DeepLearning");
+    addKeywordRelation("DeepLearning", "NeuralNetworks");
 
-    keywordMap["car"] = {"vehicle"};
-    keywordMap["vehicle"] = {"automobile"};
+    addKeywordRelation("car", "vehicle");
+    addKeywordRelation("vehicle", "automobile");
 
-    keywordMap["phone"] = {"mobile"};
-    keywordMap["mobile"] = {"smartphone"};
-
-    for (auto &pair : docs)
-    {
-        indexDocument(pair.second);
-    }
+    addKeywordRelation("phone", "mobile");
+    addKeywordRelation("mobile", "smartphone");
 
     for (auto &pair : docs)
     {
@@ -226,9 +255,10 @@ int main()
     openDocument(1);
     search("hello");
     search("AI");
-    openDocument(1);
 
     findPath(1, 3);
+
+    undo();
 
     return 0;
 }
