@@ -9,6 +9,7 @@ struct Document
 {
     int id;
     string content;
+    int clicks = 0;
 };
 
 unordered_map<int, Document> docs;
@@ -41,6 +42,11 @@ void search(string keyword)
     }
 }
 
+void openDocument(int id) {
+    docs[id].clicks++;
+    cout << "Opened: " << docs[id].content << endl;
+}
+
 int main()
 {
     Document d1 = {1, "hello world"};
@@ -71,6 +77,7 @@ int main()
     }
 
     search("hello");
+    openDocument(1);
 
     return 0;
 }
