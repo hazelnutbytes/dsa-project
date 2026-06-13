@@ -34,6 +34,10 @@ stack<Action> rollbacklog;
 unordered_map<int, Document> docs;
 map<string, vector<int>> indexMap;
 
+unordered_map<string, vector<string>> keywordMap;
+
+void indexDocument(Document &doc);
+
 queue<string> computeQueue;
 
 void addToQueue(string filename) {
@@ -47,6 +51,7 @@ void processQueue() {
 
         ifstream file(filename);
         string line;
+        string fullContent;
 
         while (getline(file, line)) {
             fullContent += line + " ";
@@ -54,16 +59,22 @@ void processQueue() {
 
         file.close();
 
+        int docId = -1;
+
+        auto pos = filename.find('_');
+        if (pos != string::npos) {
+            docId = stoi(filename.substr(0, pos));
+        }
+
         Document temp;
-        temp.id = stoi(filename);
+        temp.id = docId;
         temp.fileName = filename;
         temp.content = fullContent;
 
-        indexDocument(temp);
+        docs[temp.id] = temp;
+        indexDocument(docs[temp.id]);
     }
 }
-
-unordered_map<string, vector<string>> keywordMap;
 
 string readFileContent(const string &fileName)
 {
@@ -312,7 +323,7 @@ void adminMenu()
     int choice;
     while (true)
     {
-        cout << "\n1.Add Document\n2.Add Keyword Relation\n3.Undo\n4.Exit\nChoice: ";
+        cout << "\n1.Add Document\n2.Add Keyword Relation\n3.Undo\n4.Process Queue\n5.Exit\nChoice: ";
         cin >> choice;
 
         if (choice == 1)
@@ -342,6 +353,10 @@ void adminMenu()
         else if (choice == 3)
         {
             undo();
+        }
+        else if (choice == 4)
+        {
+            processQueue();
         }
         else
             break;
