@@ -49,10 +49,17 @@ void processQueue() {
         string line;
 
         while (getline(file, line)) {
-            cout << line << endl;
+            fullContent += line + " ";
         }
 
         file.close();
+
+        Document temp;
+        temp.id = stoi(filename);
+        temp.fileName = filename;
+        temp.content = fullContent;
+
+        indexDocument(temp);
     }
 }
 
