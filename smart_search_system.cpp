@@ -34,13 +34,34 @@ void indexDocument(Document &doc)
 
 void search(string keyword)
 {
-    if (indexMap.find(keyword) == indexMap.end())
-    {
+    vector<int> results;
+
+    //main keyword results
+    if(indexMap.find(keyword) != indexMap.end()) {
+        for (int id : indexMap[keyword]) {
+            results.push_back(id);
+        }
+    }
+
+    //related keyword results
+    if(keywordMap.find(keyword) != keywordMap.end()) {
+        for (string related : keywordMap[keyword]) {
+            if (indexMap.find(related) != indexMap.end()) {
+                for (int id : indexMap[related]) {
+                    results.push_back(id);
+                }
+            }
+        }
+    }
+
+    if (results.empty()) {
         cout << "No results\n";
         return;
     }
-
-    vector<int> results = indexMap[keyword];
+    
+    //remove duplicates
+    sort(results.begin(), results.end());
+    results.erase(unique(results.begin(), results.end()), results.end());
 
     sort(results.begin(), results.end(), [](int a, int b) {
         return docs[a].clicks > docs[b].clicks;
@@ -48,7 +69,7 @@ void search(string keyword)
 
     for (int id : results)
     {
-        cout << "Doc" << id << " (Clicks: " << docs[id].clicks << ":" << docs[id].content << endl;
+        cout << "Doc " << id << ": " << docs[id].content << endl;
     }
 }
 
