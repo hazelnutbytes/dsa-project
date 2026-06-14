@@ -318,12 +318,21 @@ void findPath(int start, int target)
         return;
     }
 
-    cout << "Path: ";
+    vector<int> path;
     int curr = target;
+
     while (curr != -1)
     {
-        cout << curr << " ";
+        path.push_back(curr);
         curr = parent[curr];
+    }
+
+    reverse(path.begin(), path.end());
+
+    cout << "Path: ";
+    for (int node : path)
+    {
+        cout << node << " ";
     }
     cout << endl;
 }
@@ -362,12 +371,20 @@ void userMenu()
     }
 }
 
+void addCitation(int from, int to)
+{
+    if (docs.find(from) != docs.end() && docs.find(to) != docs.end())
+    {
+        docs[from].citations.push_back(to);
+    }
+}
+
 void adminMenu()
 {
     int choice;
     while (true)
     {
-        cout << "\n1.Add Document\n2.Add Keyword Relation\n3.Undo\n4.Process Queue\n5.Exit\nChoice: ";
+        cout << "\n1.Add Document\n2.Add Keyword Relation\n3.Undo\n4.Process Queue\n5.Add citation\n6.Exit\nChoice: ";
         cin >> choice;
 
         if (choice == 1)
@@ -401,6 +418,13 @@ void adminMenu()
         else if (choice == 4)
         {
             processQueue();
+        }
+        else if (choice == 5)
+        {
+            int a, b;
+            cout << "From Doc -> To Doc: ";
+            cin >> a >> b;
+            addCitation(a, b);
         }
         else
             break;
