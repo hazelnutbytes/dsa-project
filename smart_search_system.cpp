@@ -18,6 +18,7 @@ struct Document
     string content;
     int clicks = 0;
     vector<int> citations;
+    string signature;
 };
 
 struct Action
@@ -40,12 +41,27 @@ void indexDocument(Document &doc);
 
 queue<string> computeQueue;
 
-void addToQueue(string filename) {
+void addToQueue(string filename)
+{
     computeQueue.push(filename);
 }
 
-void processQueue() {
-    while (!computeQueue.empty()) {
+string generateSignature(const string &content)
+{
+    hash<string> h;
+    return to_string(h(content));
+}
+
+bool verifySignature(const Document &doc)
+{
+    return doc.signature == generateSignature(doc.content);
+}
+
+
+void processQueue()
+{
+    while (!computeQueue.empty())
+    {
         string filename = computeQueue.front();
         computeQueue.pop();
 
@@ -53,7 +69,8 @@ void processQueue() {
         string line;
         string fullContent;
 
-        while (getline(file, line)) {
+        while (getline(file, line))
+        {
             fullContent += line + " ";
         }
 
@@ -62,7 +79,8 @@ void processQueue() {
         int docId = -1;
 
         auto pos = filename.find('_');
-        if (pos != string::npos) {
+        if (pos != string::npos)
+        {
             docId = stoi(filename.substr(0, pos));
         }
 
@@ -70,6 +88,7 @@ void processQueue() {
         temp.id = docId;
         temp.fileName = filename;
         temp.content = fullContent;
+        temp.signature = generateSignature(fullContent);
 
         docs[temp.id] = temp;
         indexDocument(docs[temp.id]);
@@ -150,6 +169,7 @@ void addDocument(int id, string fileName, string content)
     doc.id = id;
     doc.fileName = fullName;
     doc.content = content;
+    doc.signature = generateSignature(content);
 
     docs[id] = doc;
 
@@ -230,6 +250,9 @@ void search(string keyword)
              << ", Clicks: " << docs[id].clicks
              << ", File: " << docs[id].fileName << "): "
              << docs[id].content << endl;
+
+         cout << "Signature valid: "
+         << (verifySignature(docs[id]) ? "YES" : "NO") << endl;
     }
 }
 
