@@ -35,6 +35,14 @@ stack<Action> rollbacklog;
 unordered_map<int, Document> docs;
 map<string, vector<int>> indexMap;
 
+vector<map<string, vector<int>>> storageNodes(3);
+
+int getNodeIndex(const string &key)
+{
+    hash<string> h;
+    return h(key) % storageNodes.size();
+}
+
 unordered_map<string, vector<string>> keywordMap;
 
 void indexDocument(Document &doc);
@@ -145,16 +153,20 @@ void indexDocument(Document &doc)
 
     while (ss >> word)
     {
-        indexMap[word].push_back(doc.id);
+        int node = getNodeIndex(word);
+        storageNodes[node][word].push_back(doc.id);
     }
 }
 
 void removeFromIndex(int docId)
 {
-    for (auto &pair : indexMap)
+    for (auto &node : storageNodes)
     {
-        auto &vec = pair.second;
-        vec.erase(remove(vec.begin(), vec.end(), docId), vec.end());
+        for (auto &pair : node)
+        {
+            auto &vec = pair.second;
+            vec.erase(remove(vec.begin(), vec.end(), docId), vec.end());
+        }
     }
 }
 
@@ -231,9 +243,11 @@ void search(string keyword)
 
         int weight = max(1, 3 - depth);
 
-        if (indexMap.find(k) != indexMap.end())
+        int node = getNodeIndex(k);
+
+        if (storageNodes[node].find(k) != storageNodes[node].end())
         {
-            for (int id : indexMap[k])
+            for (int id : storageNodes[node][k])
             {
                 if (docs.find(id) != docs.end())
                 {
