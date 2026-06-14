@@ -57,7 +57,6 @@ bool verifySignature(const Document &doc)
     return doc.signature == generateSignature(doc.content);
 }
 
-
 void processQueue()
 {
     while (!computeQueue.empty())
@@ -204,6 +203,21 @@ void undo()
     }
 }
 
+int countKeywordFrequency(const string &content, const string &keyword)
+{
+    stringstream ss(content);
+    string word;
+    int count = 0;
+
+    while (ss >> word)
+    {
+        if (word == keyword)
+            count++;
+    }
+
+    return count;
+}
+
 void search(string keyword)
 {
     unordered_map<int, int> score;
@@ -222,7 +236,10 @@ void search(string keyword)
             for (int id : indexMap[k])
             {
                 if (docs.find(id) != docs.end())
-                    score[id] += weight;
+                {
+                    int freq = countKeywordFrequency(docs[id].content, k);
+                    score[id] += weight * freq;
+                }
             }
         }
     }
@@ -241,7 +258,7 @@ void search(string keyword)
          {
         if (score[a] == score[b])
             return docs[a].clicks > docs[b].clicks;
-        return score[a] > score[b]; });
+            return score[a] > score[b]; });
 
     for (int id : results)
     {
@@ -251,8 +268,12 @@ void search(string keyword)
              << ", File: " << docs[id].fileName << "): "
              << docs[id].content << endl;
 
-         cout << "Signature valid: "
-         << (verifySignature(docs[id]) ? "YES" : "NO") << endl;
+        cout << "Signature valid: "
+             << (verifySignature(docs[id]) ? "YES" : "NO") << endl;
+
+        cout << "Keyword Frequency: "
+             << countKeywordFrequency(docs[id].content, keyword)
+             << endl;
     }
 }
 
