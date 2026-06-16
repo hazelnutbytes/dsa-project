@@ -302,6 +302,13 @@ void openDocument(int id)
 
 void findPath(int start, int target)
 {
+    //Check if docs exist
+    if (docs.find(start) == docs.end() || docs.find(target) == docs.end())
+    {
+        cout << "Invalid document ID\n";
+        return;
+    }
+
     queue<int> q;
     unordered_map<int, int> parent;
 
@@ -316,6 +323,9 @@ void findPath(int start, int target)
         if (curr == target)
             break;
 
+        if (docs.find(curr) == docs.end())
+            continue;
+
         for (int next : docs[curr].citations)
         {
             if (parent.find(next) == parent.end())
@@ -326,6 +336,7 @@ void findPath(int start, int target)
         }
     }
 
+    //no path
     if (parent.find(target) == parent.end())
     {
         cout << "No path found\n";
@@ -338,6 +349,10 @@ void findPath(int start, int target)
     while (curr != -1)
     {
         path.push_back(curr);
+
+        if (parent.find(curr) == parent.end())
+            break;
+
         curr = parent[curr];
     }
 
@@ -349,6 +364,14 @@ void findPath(int start, int target)
         cout << node << " ";
     }
     cout << endl;
+}
+
+void addCitation(int from, int to)
+{
+    if (docs.find(from) != docs.end() && docs.find(to) != docs.end())
+    {
+        docs[from].citations.push_back(to);
+    }
 }
 
 void userMenu()
@@ -382,14 +405,6 @@ void userMenu()
         }
         else
             break;
-    }
-}
-
-void addCitation(int from, int to)
-{
-    if (docs.find(from) != docs.end() && docs.find(to) != docs.end())
-    {
-        docs[from].citations.push_back(to);
     }
 }
 
