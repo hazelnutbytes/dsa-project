@@ -9,6 +9,7 @@
 #include <set>
 #include <stack>
 #include <fstream>
+#include <dirent.h>
 using namespace std;
 
 struct Document
@@ -302,7 +303,6 @@ void openDocument(int id)
 
 void findPath(int start, int target)
 {
-    //Check if docs exist
     if (docs.find(start) == docs.end() || docs.find(target) == docs.end())
     {
         cout << "Invalid document ID\n";
@@ -336,7 +336,6 @@ void findPath(int start, int target)
         }
     }
 
-    //no path
     if (parent.find(target) == parent.end())
     {
         cout << "No path found\n";
@@ -372,6 +371,56 @@ void addCitation(int from, int to)
     {
         docs[from].citations.push_back(to);
     }
+}
+
+// Loads all previously created document files from disk on startup
+void loadExistingDocuments()
+{
+    DIR *dir = opendir(".");
+    if (!dir) return;
+
+    struct dirent *entry;
+    while ((entry = readdir(dir)) != nullptr)
+    {
+        string filename = entry->d_name;
+
+        // Only process files matching pattern: {number}_{name}.txt
+        if (filename.size() < 4 || filename.substr(filename.size() - 4) != ".txt")
+            continue;
+
+        auto pos = filename.find('_');
+        if (pos == string::npos)
+            continue;
+
+        int docId;
+        try
+        {
+            docId = stoi(filename.substr(0, pos));
+        }
+        catch (...)
+        {
+            continue;
+        }
+
+        // Skip if already loaded
+        if (docs.find(docId) != docs.end())
+            continue;
+
+        string content = readFileContent(filename);
+
+        Document doc;
+        doc.id = docId;
+        doc.fileName = filename;
+        doc.content = content;
+        doc.signature = generateSignature(content);
+
+        docs[docId] = doc;
+        indexDocument(docs[docId]);
+
+        cout << "Loaded: " << filename << "\n";
+    }
+
+    closedir(dir);
 }
 
 void userMenu()
@@ -462,6 +511,8 @@ void adminMenu()
 
 int main()
 {
+    loadExistingDocuments(); // Load any documents saved from previous runs
+
     int role;
     while (true)
     {
